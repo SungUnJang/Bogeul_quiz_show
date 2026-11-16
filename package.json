@@ -1,0 +1,10 @@
+{
+  "name": "bogeul-quiz-show",
+  "version": "1.0.0",
+  "description": "보글보글 퀴즈쇼 - 실시간 멀티플레이 OX 퀴즈 (최대 15명)",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED",
+  "private": true
+}
