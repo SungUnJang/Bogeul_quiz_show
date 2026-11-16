@@ -6,204 +6,7 @@
 <title>보글보글 퀴즈쇼</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%AB%A7%3C/text%3E%3C/svg%3E">
 <link rel="preload" href="img/main.webp" as="image">
-<link rel="preload" href="img/game.webp" as="image">
-<style>
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;height:100%;overflow:hidden;background:radial-gradient(ellipse at top,#0b5f8c 0%,#043150 55%,#021a2c 100%)}
-  body{display:flex;align-items:center;justify-content:center;
-    font-family:"Jua","BM JUA","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;color:#fff}
-  button{font-family:inherit}
-  .stage{position:relative;width:min(100vw,calc(100vh * 948 / 1659));width:min(100vw,calc(100dvh * 948 / 1659));
-    aspect-ratio:948/1659;container-type:size;overflow:hidden;user-select:none;-webkit-user-select:none;
-    box-shadow:0 0 60px rgba(0,0,0,.5)}
-  .screen{position:absolute;inset:0;background-size:100% 100%;display:none}
-  .screen.on{display:block}
-  #menu{background-image:url(img/main.webp)}
-  #game{background-image:url(img/game.webp)}
-
-  /* ---------- 메뉴 버튼 (그림 위 투명 버튼) ---------- */
-  .hot{position:absolute;border:0;background:transparent;border-radius:999px;cursor:pointer;transition:transform .15s, box-shadow .15s}
-  .hot:hover,.hot:focus-visible{outline:none;transform:scale(1.035);box-shadow:0 0 0 .5cqw rgba(255,255,255,.6),0 0 5cqw rgba(120,235,255,.85)}
-  .hot:active{transform:scale(.96)}
-  #btnOX{left:20.2%;top:60.6%;width:58.5%;height:7.8%;animation:pulse 1.8s ease-in-out infinite}
-  #btnBattle{left:22.6%;top:69.9%;width:54.8%;height:6.7%}
-  #btnHow{left:22.6%;top:78.1%;width:54.8%;height:6.7%}
-  #btnExit{left:22.6%;top:86.5%;width:54.8%;height:6.7%}
-  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,210,120,.0)}50%{box-shadow:0 0 0 .8cqw rgba(255,210,120,.35),0 0 6cqw rgba(255,160,80,.55)}}
-
-  .bubbles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-  .bub{position:absolute;bottom:-6%;border-radius:50%;border:.3cqw solid rgba(255,255,255,.55);
-    background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.7),rgba(170,230,255,.15) 40%,rgba(120,200,255,.05));
-    animation:rise linear infinite}
-  @keyframes rise{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:.9}50%{transform:translateY(-55cqh) translateX(2cqw)}100%{transform:translateY(-112cqh) translateX(-2cqw);opacity:0}}
-
-  /* ---------- 상단 툴바 ---------- */
-  .bar{position:absolute;top:1.2cqh;display:flex;gap:1.6cqw;z-index:50}
-  .bar.l{left:2.5cqw}.bar.r{right:2.5cqw}
-  .ibtn{position:relative;width:10cqw;height:10cqw;border-radius:50%;border:.5cqw solid #ffe39a;cursor:pointer;
-    background:radial-gradient(circle at 35% 30%,#7ee6ff,#1689c2);color:#fff;font-size:4.6cqw;line-height:1;
-    display:flex;align-items:center;justify-content:center;box-shadow:0 .6cqw 0 #0b4f74,0 1cqw 2cqw rgba(0,0,0,.35);transition:transform .1s}
-  .ibtn:active{transform:translateY(.5cqw);box-shadow:0 .1cqw 0 #0b4f74}
-  .ibtn.off{filter:grayscale(1) brightness(.75)}
-  .ibtn.off::after{content:"";position:absolute;width:8cqw;height:.7cqw;background:#ff5b5b;transform:rotate(-45deg);border-radius:1cqw}
-
-  /* ---------- 전광판 ---------- */
-  #board{position:absolute;left:11.5%;width:77%;top:15.2%;height:13.6%;display:flex;align-items:center;justify-content:center;
-    text-align:center;padding:0 2cqw;font-size:4.3cqw;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere;
-    text-shadow:0 .3cqw 0 rgba(0,0,0,.45);color:#f4fffd}
-  #board.flash{animation:boardFlash .6s}
-  @keyframes boardFlash{0%{transform:scale(.85);opacity:0;filter:brightness(2.2)}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
-  #board .sub{display:block;font-size:3.2cqw;color:#9ff3ff;margin-top:.6cqh}
-  #board .ans{display:inline-block;margin-left:1.5cqw;font-size:6.5cqw;line-height:1.2;padding:0 2.4cqw;border-radius:2cqw;vertical-align:middle;border:.4cqw solid #fff;box-shadow:0 0 3cqw rgba(255,255,255,.6);animation:pop .5s}
-  #board .ans.O{background:#2ec4a0;color:#fff}#board .ans.X{background:#ff7a6b;color:#fff}
-  #timer{position:absolute;right:9.2%;top:8.4%;width:9.5cqw;height:9.5cqw;border-radius:50%;display:none;align-items:center;justify-content:center;
-    font-size:5cqw;color:#5a3500;background:radial-gradient(circle at 35% 30%,#fff6c8,#ffc23d 60%,#e48a0e);border:.45cqw solid #fff3c4;box-shadow:0 .5cqw 1.2cqw rgba(0,0,0,.4)}
-  #timer.hurry{animation:hurry .5s infinite;background:radial-gradient(circle at 35% 30%,#ffd6d0,#ff5f4d 60%,#c4241a);color:#fff}
-  @keyframes hurry{50%{transform:scale(1.15)}}
-  #round{position:absolute;left:9.2%;top:9.2%;padding:.5cqh 2.4cqw;border-radius:3cqw;background:#0b6a7a;border:.4cqw solid #8ff0ff;font-size:3.4cqw;display:none}
-  #tbar{position:absolute;left:14%;width:72%;top:28.4%;height:.9cqh;border-radius:2cqw;background:rgba(0,0,0,.35);overflow:hidden;display:none}
-  #tbar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#7cffc5,#ffe066);transform-origin:left}
-  #info{position:absolute;left:50%;transform:translateX(-50%);top:31.4%;white-space:nowrap;padding:.5cqh 3cqw;border-radius:4cqw;
-    background:rgba(4,48,72,.72);border:.3cqw solid rgba(160,240,255,.6);font-size:3cqw;z-index:5}
-  #info .dot{display:inline-block;width:1.8cqw;height:1.8cqw;border-radius:50%;background:#ff6b6b;margin-right:1cqw;vertical-align:middle}
-  #info .dot.ok{background:#4cff9a;box-shadow:0 0 1.5cqw #4cff9a}
-
-  #banner{position:absolute;left:50%;top:39%;transform:translate(-50%,-50%) scale(0);z-index:40;pointer-events:none;
-    font-size:9cqw;padding:1.4cqh 6cqw;border-radius:6cqw;white-space:nowrap;
-    background:linear-gradient(#fff7d1,#ffd257);color:#7a3d00;border:.7cqw solid #fff;box-shadow:0 1cqw 3cqw rgba(0,0,0,.45);
-    text-shadow:0 .3cqw 0 #fff}
-  #banner.show{animation:bannerIn 2.2s forwards}
-  #banner.bad{background:linear-gradient(#ffd2cc,#ff6a55);color:#fff;text-shadow:0 .3cqw 0 #a32012}
-  @keyframes bannerIn{0%{transform:translate(-50%,-50%) scale(0) rotate(-8deg)}12%{transform:translate(-50%,-50%) scale(1.15) rotate(3deg)}20%{transform:translate(-50%,-50%) scale(1)}85%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-55%) scale(.9);opacity:0}}
-
-  /* ---------- 경기장 ---------- */
-  #arena{position:absolute;left:0;right:0;top:43%;height:39%;cursor:pointer;z-index:2;touch-action:none}
-  #field{position:absolute;inset:0;pointer-events:none;z-index:3}
-  .sideGlow{position:absolute;top:46%;height:36%;width:40%;border-radius:40%;opacity:0;transition:opacity .4s;pointer-events:none;z-index:1}
-  #glowO{left:8%;background:radial-gradient(ellipse,rgba(80,255,200,.55),transparent 70%)}
-  #glowX{right:8%;background:radial-gradient(ellipse,rgba(255,110,100,.55),transparent 70%)}
-  .sideGlow.on{opacity:1;animation:glow 1s ease-in-out infinite alternate}
-  @keyframes glow{to{filter:brightness(1.5)}}
-
-  .chr{position:absolute;width:0;height:0;transition:opacity .4s}
-  .chr .wrap{position:absolute;left:0;bottom:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
-  .chr .shadow{position:absolute;bottom:-1cqw;left:50%;width:10cqw;height:2.6cqw;transform:translateX(-50%);border-radius:50%;background:rgba(60,40,10,.28)}
-  .chr.me .shadow{background:radial-gradient(ellipse,rgba(255,240,120,.9),rgba(255,200,50,.35) 60%,transparent 72%);width:13cqw;height:3.6cqw;animation:meGlow 1s infinite alternate}
-  @keyframes meGlow{to{filter:brightness(1.4)}}
-  .chr .sprite{position:relative;transform-origin:50% 100%;animation:idle 1.3s ease-in-out infinite}
-  .chr .sprite img{display:block;height:15cqw;width:auto;max-width:18cqw;object-fit:contain;transition:transform .15s;filter:drop-shadow(0 .4cqw .3cqw rgba(0,0,0,.25))}
-  .chr.flip .sprite img{transform:scaleX(-1)}
-  .chr.walk .sprite{animation:walk .32s ease-in-out infinite}
-  .chr .tag{position:absolute;top:100%;margin-top:.8cqw;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:2.7cqw;
-    padding:.15cqh 1.6cqw;border-radius:2cqw;background:rgba(0,40,70,.75);color:#fff;border:.25cqw solid rgba(255,255,255,.5)}
-  .chr.me .tag{background:#ffb627;color:#5a2d00;border-color:#fff}
-  .chr .crown{position:absolute;top:-4.6cqw;left:50%;transform:translateX(-50%);font-size:4cqw}
-  .chr .arrow{display:none}
-  .chr.me .arrow{display:block;position:absolute;top:-6.2cqw;left:50%;transform:translateX(-50%);color:#ffe14d;font-size:4cqw;text-shadow:0 0 1cqw #000;animation:bob .6s infinite alternate}
-  .chr.me.hosting .arrow{top:-10cqw}
-  @keyframes bob{to{transform:translate(-50%,-1cqw)}}
-  @keyframes idle{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-.9cqw) scale(1.02,.98)}}
-  @keyframes walk{0%{transform:translateY(0) rotate(-7deg)}50%{transform:translateY(-1.8cqw) rotate(0)}100%{transform:translateY(0) rotate(7deg)}}
-  .chr.cheer .sprite{animation:cheer .45s ease-out 3}
-  @keyframes cheer{0%,100%{transform:translateY(0) scale(1)}40%{transform:translateY(-5cqw) scale(1.08,.95)}}
-  .chr.hit .sprite{animation:hit .5s 2}
-  @keyframes hit{0%,100%{transform:translateX(0)}20%{transform:translateX(-2cqw) rotate(-10deg)}40%{transform:translateX(2cqw) rotate(10deg)}60%{transform:translateX(-1.5cqw)}80%{transform:translateX(1.5cqw)}}
-  .chr.hit .sprite img{filter:drop-shadow(0 0 1.2cqw red) sepia(1) saturate(5) hue-rotate(-40deg)}
-  .chr.out{opacity:.5}
-  .chr.out .sprite{animation:ghost 2.2s ease-in-out infinite}
-  .chr.out .sprite img{filter:grayscale(1) brightness(1.25)}
-  .chr.out .tag::before{content:"👻 "}
-  @keyframes ghost{0%,100%{transform:translateY(-1cqw)}50%{transform:translateY(-3.5cqw)}}
-  .chr.undecided .tag::after{content:" ❓"}
-
-  /* ---------- 하단 O/X 버튼 ---------- */
-  .oxbtn{position:absolute;top:81.6%;width:21.4%;height:12.4%;border-radius:50%;border:0;background:transparent;cursor:pointer;z-index:6;transition:transform .12s}
-  .oxbtn:hover{box-shadow:0 0 5cqw rgba(255,255,255,.7)}
-  .oxbtn:active{transform:scale(.9)}
-  .oxbtn.pick{box-shadow:0 0 0 .8cqw #ffe14d,0 0 6cqw #ffe14d}
-  #pickO{left:24.2%}#pickX{left:54.5%}
-  .oxbtn[disabled]{cursor:not-allowed;opacity:.55;filter:grayscale(1)}
-
-  .cta{position:absolute;left:50%;transform:translateX(-50%);z-index:30;border:.6cqw solid #fff3c4;border-radius:6cqw;cursor:pointer;
-    padding:1.3cqh 7cqw;font-size:5cqw;color:#fff;background:linear-gradient(#ff8e6b,#f2453a);box-shadow:0 .9cqw 0 #a5251b,0 1.5cqw 3cqw rgba(0,0,0,.4);
-    text-shadow:0 .3cqw 0 rgba(0,0,0,.3);white-space:nowrap}
-  .cta:active{transform:translate(-50%,.6cqw);box-shadow:0 .2cqw 0 #a5251b}
-  .cta.teal{background:linear-gradient(#5fe0e6,#159bb5);box-shadow:0 .9cqw 0 #0a5f72,0 1.5cqw 3cqw rgba(0,0,0,.4)}
-  #startBtn{top:36.5%;display:none;animation:pulse 1.6s infinite}
-  #joinBtn{bottom:2.2%;display:none;font-size:4.2cqw;padding:1cqh 6cqw}
-  #note{position:absolute;left:50%;transform:translateX(-50%);top:37.5%;font-size:3.3cqw;padding:.8cqh 3.5cqw;border-radius:4cqw;
-    background:rgba(255,255,255,.88);color:#0b4f74;white-space:nowrap;display:none;z-index:6}
-  #spectate{position:absolute;left:50%;transform:translateX(-50%);bottom:1.2%;padding:.8cqh 4cqw;border-radius:4cqw;font-size:3.2cqw;
-    background:rgba(40,30,80,.82);border:.3cqw solid #c8b6ff;display:none;z-index:20;white-space:nowrap}
-
-  /* ---------- 오버레이 / 모달 ---------- */
-  .ov{position:absolute;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:rgba(1,25,45,.68);backdrop-filter:blur(3px)}
-  .ov.on{display:flex}
-  .panel{width:90%;max-height:92%;overflow:auto;border-radius:5cqw;padding:4cqw;text-align:center;
-    background:linear-gradient(#11677f,#073a55);border:.8cqw solid #f3c955;box-shadow:0 0 0 .5cqw #7a4b06,0 2cqw 6cqw rgba(0,0,0,.6);animation:pop .35s}
-  @keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
-  .panel h2{margin:0 0 2.5cqw;font-size:6.4cqw;color:#ffe48a;text-shadow:0 .5cqw 0 #6b3a00;font-weight:normal}
-  .panel p,.panel li{font-size:3.7cqw;line-height:1.55;text-align:left;color:#e8fbff}
-  .panel ul{padding-left:5cqw;margin:0 0 3cqw}
-  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2.2cqw;margin:2cqw 0 3cqw}
-  .card{position:relative;aspect-ratio:1;border-radius:3cqw;border:.5cqw solid rgba(255,255,255,.35);cursor:pointer;
-    background:radial-gradient(circle at 50% 35%,#c8f6ff,#4cb8d8 75%);display:flex;align-items:center;justify-content:center;padding:1cqw;transition:transform .12s}
-  .card img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .2s}
-  .card:hover img{animation:walk .35s infinite}
-  .card.sel{border-color:#ffe14d;box-shadow:0 0 0 .6cqw #ffb627,0 0 4cqw #ffe14d;transform:scale(1.06)}
-  .card.sel img{animation:cheer .5s infinite}
-  .card.taken{cursor:not-allowed;filter:grayscale(1);opacity:.45}
-  .card.taken::after{content:"선택됨";position:absolute;bottom:.6cqw;font-size:2.6cqw;background:rgba(0,0,0,.6);padding:0 1.4cqw;border-radius:2cqw}
-  .card .num{position:absolute;top:.6cqw;left:1.2cqw;font-size:2.4cqw;color:#05506b}
-  .row{display:flex;gap:2.5cqw;justify-content:center;align-items:center;flex-wrap:wrap}
-  .nick{font-family:inherit;font-size:4.4cqw;padding:1.2cqw 3cqw;border-radius:3cqw;border:.5cqw solid #9eeeff;width:52%;text-align:center;color:#063a55;outline:none}
-  .pbtn{position:relative;font-size:4.4cqw;border:.5cqw solid #fff3c4;border-radius:5cqw;padding:1.4cqw 5cqw;cursor:pointer;color:#fff;
-    background:linear-gradient(#ff8e6b,#f2453a);box-shadow:0 .7cqw 0 #a5251b}
-  .pbtn.teal{background:linear-gradient(#5fe0e6,#159bb5);box-shadow:0 .7cqw 0 #0a5f72}
-  .pbtn.gray{background:linear-gradient(#a7b9c4,#6c8391);box-shadow:0 .7cqw 0 #3e505b}
-  .pbtn:active{transform:translateY(.5cqw);box-shadow:none}
-  .pbtn[disabled]{opacity:.5;cursor:not-allowed}
-  .winners{display:flex;flex-wrap:wrap;gap:3cqw;justify-content:center;margin:3cqw 0}
-  .winners div{display:flex;flex-direction:column;align-items:center;font-size:3.8cqw}
-  .winners img{height:20cqw;animation:cheer .6s infinite}
-  #toast{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);z-index:200;max-width:86%;text-align:center;
-    background:rgba(255,255,255,.95);color:#0a4664;font-size:3.8cqw;padding:2cqw 5cqw;border-radius:4cqw;box-shadow:0 1cqw 3cqw rgba(0,0,0,.4);
-    opacity:0;pointer-events:none;transition:opacity .25s, transform .25s}
-  #toast.on{opacity:1;transform:translate(-50%,-50%) scale(1.03)}
-  /* ⚡ 번개 이펙트 */
-  .boltLayer{position:absolute;inset:0;width:100%;height:100%;z-index:45;pointer-events:none;overflow:visible}
-  .boltLayer polyline{fill:none;stroke-linecap:round;stroke-linejoin:round}
-  .boltLayer .glow{stroke:#9fd8ff;stroke-width:3.2;opacity:.85;filter:blur(1.2px)}
-  .boltLayer .core{stroke:#fff;stroke-width:.9}
-  .boltLayer .br{stroke:#e8f6ff;stroke-width:.5;opacity:.9}
-  .boltLayer{animation:boltFlicker .55s steps(1) forwards}
-  @keyframes boltFlicker{0%{opacity:1}12%{opacity:.15}22%{opacity:1}38%{opacity:.3}50%{opacity:1}75%{opacity:.6}100%{opacity:0}}
-  #flash{position:absolute;inset:0;z-index:44;pointer-events:none;background:#eaf6ff;opacity:0}
-  #flash.on{animation:flash .5s ease-out}
-  @keyframes flash{0%{opacity:.85}15%{opacity:.1}25%{opacity:.6}100%{opacity:0}}
-  .stage.quake{animation:quake .45s}
-  @keyframes quake{20%{transform:translate(-1.2cqw,.6cqw)}40%{transform:translate(1cqw,-.8cqw)}60%{transform:translate(-.7cqw,.4cqw)}80%{transform:translate(.5cqw,0)}}
-  .chr.zap{opacity:1!important}
-  .chr.zap .sprite{animation:zapShake .09s linear 8!important}
-  .chr.zap .sprite img{filter:brightness(3) drop-shadow(0 0 2cqw #bfe6ff) drop-shadow(0 0 4cqw #fff)!important}
-  .chr.burnt{opacity:1!important}
-  .chr.burnt .sprite{animation:burnt .9s ease-in forwards!important}
-  .chr.burnt .sprite img{filter:brightness(.15) contrast(1.4) drop-shadow(0 0 1cqw #ff8a3d)!important}
-  .chr.zap .tag::before,.chr.burnt .tag::before{content:"⚡ "!important}
-  @keyframes zapShake{0%{transform:translate(-1cqw,0)}50%{transform:translate(1cqw,-.5cqw)}100%{transform:translate(-1cqw,0)}}
-  @keyframes burnt{0%{transform:scale(1)}30%{transform:scale(1.08,.9)}100%{transform:scale(.92,1)}}
-  .scorch{position:absolute;width:15cqw;height:4cqw;transform:translate(-50%,-50%);border-radius:50%;z-index:4;pointer-events:none;
-    background:radial-gradient(ellipse,rgba(30,20,10,.75),rgba(60,40,20,.35) 55%,transparent 72%);animation:scorch 4s forwards}
-  @keyframes scorch{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}10%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}70%{opacity:.8}100%{opacity:0}}
-  .smoke{position:absolute;width:5cqw;height:5cqw;border-radius:50%;background:radial-gradient(circle,rgba(90,90,90,.75),rgba(90,90,90,0) 70%);
-    z-index:46;pointer-events:none;animation:smoke 1.6s ease-out forwards}
-  @keyframes smoke{0%{transform:translate(-50%,-50%) scale(.4);opacity:.9}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% - 14cqw)) scale(2.4);opacity:0}}
-  .spark{position:absolute;width:1.2cqw;height:1.2cqw;border-radius:50%;background:#fff6b0;box-shadow:0 0 1.5cqw #ffd84d;z-index:46;pointer-events:none;
-    animation:spark .6s ease-out forwards}
-  @keyframes spark{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
-  .confetti{position:absolute;top:-3%;width:1.6cqw;height:2.6cqw;z-index:150;pointer-events:none;animation:fall linear forwards}
-  @keyframes fall{to{transform:translateY(110cqh) rotate(720deg)}}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="stage" id="stage">
@@ -215,35 +18,77 @@
       <button class="ibtn bgmBtn" title="배경음악 켜기/끄기">🎵</button>
       <button class="ibtn sfxBtn" title="효과음 켜기/끄기">🔊</button>
     </div>
-    <button class="hot" id="btnOX" aria-label="OX 게임시작"></button>
-    <button class="hot" id="btnBattle" aria-label="배틀 게임시작"></button>
+    <button class="hot" id="btnOX" aria-label="OX 게임"></button>
+    <button class="hot" id="btnDraw" aria-label="그림 맞추기"></button>
     <button class="hot" id="btnHow" aria-label="게임 방법"></button>
     <button class="hot" id="btnExit" aria-label="나가기"></button>
   </section>
 
+  <!-- ================= 방 목록 ================= -->
+  <section class="screen" id="rooms">
+    <div class="roomPanel">
+      <h2 id="roomsTitle">OX 게임 방 목록</h2>
+      <div class="roomList" id="roomList"></div>
+      <div class="row">
+        <button class="pbtn" id="createOpen">＋ 방 만들기</button>
+        <button class="pbtn gray" id="roomsBack">⬅ 메뉴</button>
+      </div>
+    </div>
+  </section>
+
   <!-- ================= OX 게임 ================= -->
   <section class="screen" id="game">
-    <div class="bar l"><button class="ibtn" id="backBtn" title="메뉴로 나가기">⬅</button></div>
+    <div class="bar l"><button class="ibtn backBtn" title="방 나가기">⬅</button><button class="ibtn inviteBtn" title="초대 링크 복사">🔗</button></div>
     <div class="bar r">
       <button class="ibtn bgmBtn" title="배경음악 켜기/끄기">🎵</button>
       <button class="ibtn sfxBtn" title="효과음 켜기/끄기">🔊</button>
     </div>
-    <div id="round"></div>
-    <div id="timer"></div>
-    <div id="board"></div>
-    <div id="tbar"><i></i></div>
-    <div id="info"><span class="dot"></span><span id="infoText">연결 중…</span></div>
+    <div class="round"></div>
+    <div class="timer"></div>
+    <div class="board"></div>
+    <div class="tbar"><i></i></div>
+    <div class="info"><span class="dot"></span><span class="infoText">연결 중…</span></div>
     <div class="sideGlow" id="glowO"></div><div class="sideGlow" id="glowX"></div>
     <div id="arena"></div>
-    <div id="field"></div>
-    <button class="cta" id="startBtn">▶ 게임 시작</button>
-    <div id="note"></div>
+    <div class="field"></div>
+    <button class="cta startBtn">▶ 게임 시작</button>
+    <div class="lobbyDiff seg"><button data-diff="easy">🐣 이지</button><button data-diff="hard" class="hard">🔥 하드</button></div>
+    <div class="note"></div>
     <button class="oxbtn" id="pickO" aria-label="O 쪽으로 이동"></button>
     <button class="oxbtn" id="pickX" aria-label="X 쪽으로 이동"></button>
-    <button class="cta teal" id="joinBtn">🫧 참가하기</button>
-    <div id="spectate">👻 관전자 모드 · 게임이 끝나면 다시 참가할 수 있어요</div>
-    <div id="banner"></div>
-    <div id="flash"></div>
+    <button class="cta teal joinBtn">🫧 참가하기</button>
+    <div class="spectate">👻 유령 모드 · 유령끼리만 보여요. 게임이 끝나면 다시 참가할 수 있어요</div>
+    <div class="banner"></div>
+    <div class="flashOv"></div>
+  </section>
+
+  <!-- ================= 그림 맞추기 ================= -->
+  <section class="screen" id="draw">
+    <canvas id="trail"></canvas>
+    <div class="bar l"><button class="ibtn backBtn" title="방 나가기">⬅</button><button class="ibtn inviteBtn" title="초대 링크 복사">🔗</button></div>
+    <div class="bar r">
+      <button class="ibtn bgmBtn" title="배경음악 켜기/끄기">🎵</button>
+      <button class="ibtn sfxBtn" title="효과음 켜기/끄기">🔊</button>
+    </div>
+    <div class="round"></div>
+    <div class="timer"></div>
+    <div class="dword" id="dword"></div>
+    <div class="chatlog" id="chatlog"></div>
+    <div class="tbar"><i></i></div>
+    <div class="scores" id="scores"></div>
+    <div class="info" style="top:35.6%"><span class="dot"></span><span class="infoText">연결 중…</span></div>
+    <div id="darena"></div>
+    <div class="field"></div>
+    <button class="cta startBtn" style="top:42%">▶ 게임 시작</button>
+    <div class="note" style="top:43%"></div>
+    <button class="boardBtn" id="rideBtn" aria-label="비눗방울 탑승"></button>
+    <button class="pbtn gray clearBtn" id="clearBtn">🧽 다시 그리기</button>
+    <form class="chatBar" id="chatBar" autocomplete="off">
+      <input id="chatIn" maxlength="20" placeholder="정답을 입력하세요!" enterkeyhint="send">
+      <button type="submit">보내기</button>
+    </form>
+    <button class="cta teal joinBtn" style="bottom:9%">🫧 참가하기</button>
+    <div class="banner"></div>
   </section>
 
   <!-- 캐릭터 선택 (4x4) -->
@@ -261,18 +106,45 @@
     </div>
   </div>
 
+  <!-- 방 만들기 -->
+  <div class="ov" id="createOv">
+    <div class="panel">
+      <h2 id="createTitle">방 만들기</h2>
+      <label for="roomName">방 제목</label>
+      <input class="nick" id="roomName" maxlength="16" placeholder="예) 3학년 2반 퀴즈방" style="width:90%">
+      <div id="diffBox">
+        <label>난이도</label>
+        <div class="seg" id="createDiff"><button data-diff="easy" class="on">🐣 이지</button><button data-diff="hard" class="hard">🔥 하드</button></div>
+      </div>
+      <div class="row" style="margin-top:3cqw">
+        <button class="pbtn" id="createBtn">만들기</button>
+        <button class="pbtn gray" data-close>취소</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 게임 방법 -->
   <div class="ov" id="howOv">
     <div class="panel">
       <h2>📖 게임 방법</h2>
+      <p><b>🫧 공통</b></p>
       <ul>
-        <li>OX 게임시작을 누르고 <b>4×4 캐릭터 중 하나</b>를 골라 입장해요. (최대 15명)</li>
-        <li>먼저 들어온 사람이 <b>👑 방장</b>! 방장이 <b>게임 시작</b>을 누르면 시작돼요.</li>
-        <li>전광판에 문제가 나오면 <b>제한 시간</b> 안에 <b>O 또는 X 구역</b>으로 이동하세요.</li>
-        <li>이동: 바닥을 터치/클릭, 아래 <b>O·X 거품 버튼</b>, 또는 <b>방향키·WASD</b>.</li>
-        <li>가운데 선 위에 서 있으면 <b>선택 안 함 = 탈락</b>이에요.</li>
-        <li>한 번 틀리면 게임이 끝날 때까지 <b>👻 관전자 모드</b>!</li>
-        <li>게임 중에도 언제든 새로 참가할 수 있어요. 마지막 1명이 남으면 우승!</li>
+        <li>게임을 고르고 <b>방 만들기</b>로 방을 열거나, 목록에서 방을 골라 들어가요. 방을 만든 사람이 <b>👑 방장</b>!</li>
+        <li><b>4×4 캐릭터</b> 중 하나를 골라 입장해요. (한 방 최대 15명) 🔗 버튼으로 초대 링크를 복사할 수 있어요.</li>
+      </ul>
+      <p><b>⭕ OX 게임</b></p>
+      <ul>
+        <li>방장이 <b>🐣 이지 / 🔥 하드</b> 난이도를 고르고 시작해요.</li>
+        <li>문제가 나오면 제한 시간 안에 <b>O 또는 X 구역</b>으로 이동! (바닥 터치·O/X 거품 버튼·방향키)</li>
+        <li>틀리면 ⚡번개를 맞고 <b>👻 유령</b>이 돼요. 유령도 돌아다닐 수 있지만 <b>유령끼리만</b> 보여요.</li>
+        <li>마지막 1명이 남으면 우승!</li>
+      </ul>
+      <p><b>🎨 그림 맞추기</b></p>
+      <ul>
+        <li>랜덤으로 뽑힌 출제자만 경기장에 나와요. 출제자가 걸어간 길이 <b>진한 흙</b>으로 남아 그림이 돼요.</li>
+        <li>왼쪽 아래 <b>🫧 탑승</b>을 누르면 비눗방울을 타고 떠올라 흔적 없이 이동해요. 원하는 곳에서 <b>착지</b>하면 다시 그릴 수 있어요. (스페이스바도 가능)</li>
+        <li>나머지는 아래 입력창에 정답을 써요. <b>가장 먼저 맞힌 사람이 다음 출제자</b>!</li>
+        <li>먼저 <b>3번</b> 맞힌 사람이 우승해요.</li>
       </ul>
       <button class="pbtn teal" data-close>알겠어요!</button>
     </div>
@@ -309,542 +181,6 @@
 
   <div id="toast"></div>
 </div>
-
-<script>
-'use strict';
-/* =========================================================
-   보글보글 퀴즈쇼 - 클라이언트
-   ※ 문제 시간(초)은 server.js 맨 위 CONFIG.ANSWER_TIME_SEC 에서 바꿔요.
-   ========================================================= */
-const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
-const CHAR_COUNT = 16;
-const charSrc = i => `img/char${String(i + 1).padStart(2, '0')}.png`;
-const FIELD = { x0: 0.09, x1: 0.91, y0: 0.50, y1: 0.80 };          // server.js 와 같은 값
-const sideOf = x => (x < 0.47 ? 'O' : x > 0.53 ? 'X' : null);
-const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-const store = {
-  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch { return d; } },
-  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
-};
-
-// 캐릭터 이미지 미리 불러오기
-for (let i = 0; i < CHAR_COUNT; i++) { const im = new Image(); im.src = charSrc(i); }
-
-/* ---------------- 토스트 / 오버레이 ---------------- */
-let toastTimer;
-function toast(msg, ms = 2200) {
-  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), ms);
-}
-const openOv = id => $(id).classList.add('on');
-const closeOv = id => $(id).classList.remove('on');
-$$('[data-close]').forEach(b => b.addEventListener('click', () => { Sound.sfx('pop'); b.closest('.ov').classList.remove('on'); }));
-
-/* =========================================================
-   🎵 사운드 (Web Audio 로 직접 연주하는 신나는 칩튠 BGM + 효과음)
-   ========================================================= */
-const Sound = (() => {
-  let ctx = null, master, bgmGain, sfxGain, noiseBuf, timer = null, nextT = 0, step = 0;
-  let bgmOn = store.get('bgmOn', '1') === '1';
-  let sfxOn = store.get('sfxOn', '1') === '1';
-  const BPM = 150, STEP = 60 / BPM / 4;
-  const f = m => 440 * Math.pow(2, (m - 69) / 12);
-  // 8마디 진행: C G Am F | C G F G
-  const ROOTS = [48, 43, 45, 41, 48, 43, 41, 43];
-  const CHORDS = [[60, 64, 67], [59, 62, 67], [57, 60, 64], [57, 60, 65], [60, 64, 67], [59, 62, 67], [57, 60, 65], [59, 62, 67]];
-  const MEL = [
-    [[0, 72, 2], [2, 76, 2], [4, 79, 2], [6, 76, 1], [7, 79, 1], [8, 84, 3], [12, 81, 2], [14, 79, 2]],
-    [[0, 79, 2], [2, 74, 2], [4, 71, 2], [6, 74, 2], [8, 79, 4], [12, 77, 2], [14, 76, 2]],
-    [[0, 76, 2], [2, 72, 2], [4, 69, 2], [6, 72, 1], [7, 76, 1], [8, 81, 3], [12, 79, 2], [14, 76, 2]],
-    [[0, 77, 2], [2, 76, 2], [4, 74, 2], [6, 72, 2], [8, 74, 6], [14, 67, 2]],
-    [[0, 72, 1], [1, 72, 1], [2, 76, 2], [4, 79, 2], [6, 84, 2], [8, 83, 2], [10, 84, 2], [12, 86, 4]],
-    [[0, 83, 2], [2, 79, 2], [4, 74, 2], [6, 79, 2], [8, 83, 3], [11, 81, 1], [12, 79, 4]],
-    [[0, 81, 2], [2, 77, 2], [4, 72, 2], [6, 77, 2], [8, 81, 2], [10, 79, 2], [12, 77, 2], [14, 74, 2]],
-    [[0, 79, 3], [3, 74, 1], [4, 79, 2], [6, 83, 2], [8, 86, 6], [14, 71, 1], [15, 74, 1]],
-  ];
-  function init() {
-    if (ctx) return;
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return;
-    ctx = new AC();
-    master = ctx.createGain(); master.gain.value = 0.9; master.connect(ctx.destination);
-    bgmGain = ctx.createGain(); bgmGain.gain.value = 0.16; bgmGain.connect(master);
-    sfxGain = ctx.createGain(); sfxGain.gain.value = 0.5; sfxGain.connect(master);
-    noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
-    const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-  }
-  function tone(out, type, freq, t, dur, vol, freqEnd) {
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.type = type; o.frequency.setValueAtTime(freq, t);
-    if (freqEnd) o.frequency.exponentialRampToValueAtTime(freqEnd, t + dur);
-    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.008);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g); g.connect(out); o.start(t); o.stop(t + dur + 0.02);
-  }
-  function noise(out, t, dur, vol, hp) {
-    const s = ctx.createBufferSource(), g = ctx.createGain(), fl = ctx.createBiquadFilter();
-    s.buffer = noiseBuf; fl.type = 'highpass'; fl.frequency.value = hp;
-    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    s.connect(fl); fl.connect(g); g.connect(out); s.start(t); s.stop(t + dur + 0.02);
-  }
-  function playStep(s, t) {
-    const bar = Math.floor(s / 16) % 8, st = s % 16;
-    for (const [at, m, len] of MEL[bar]) if (at === st) { tone(bgmGain, 'square', f(m), t, len * STEP * 0.95, 0.32); tone(bgmGain, 'triangle', f(m + 12), t, len * STEP * 0.6, 0.08); }
-    if (st % 2 === 0) { const r = ROOTS[bar] + (st % 4 === 2 ? 12 : 0); tone(bgmGain, 'triangle', f(r), t, STEP * 1.8, 0.55); }
-    if (st % 4 === 2) for (const n of CHORDS[bar]) tone(bgmGain, 'square', f(n), t, STEP * 0.9, 0.05);
-    if (st === 0 || st === 8 || st === 10) tone(bgmGain, 'sine', 150, t, 0.16, 0.9, 40);
-    if (st === 4 || st === 12) noise(bgmGain, t, 0.14, 0.35, 1500);
-    if (st % 2 === 1) noise(bgmGain, t, 0.04, 0.12, 7000);
-  }
-  function startBgm() {
-    if (!ctx || timer || !bgmOn) return;
-    nextT = ctx.currentTime + 0.08; step = 0;
-    timer = setInterval(() => {
-      while (nextT < ctx.currentTime + 0.15) { playStep(step, nextT); nextT += STEP; step = (step + 1) % 128; }
-    }, 25);
-  }
-  function stopBgm() { clearInterval(timer); timer = null; }
-  function unlock() { init(); if (!ctx) return; if (ctx.state === 'suspended') ctx.resume(); if (bgmOn) startBgm(); }
-  function sfx(name) {
-    if (!sfxOn) return; init(); if (!ctx) return;
-    const t = ctx.currentTime + 0.01, o = sfxGain;
-    switch (name) {
-      case 'wrong':   // 삐-뿌우 (틀렸을 때)
-        tone(o, 'sawtooth', 300, t, 0.18, 0.5, 280); tone(o, 'square', 150, t, 0.18, 0.25);
-        tone(o, 'sawtooth', 200, t + 0.22, 0.55, 0.5, 90); tone(o, 'square', 100, t + 0.22, 0.55, 0.25, 60); break;
-      case 'correct': [72, 76, 79, 84].forEach((m, i) => tone(o, 'square', f(m), t + i * 0.08, 0.16, 0.3)); tone(o, 'triangle', f(88), t + 0.32, 0.4, 0.3); break;
-      case 'tick':    tone(o, 'square', 1250, t, 0.06, 0.25); break;
-      case 'ding':    tone(o, 'sine', f(88), t, 0.5, 0.4); tone(o, 'sine', f(81), t + 0.12, 0.6, 0.35); break;
-      case 'start':   [67, 72, 76].forEach((m, i) => tone(o, 'square', f(m), t + i * 0.12, 0.12, 0.3)); tone(o, 'square', f(79), t + 0.36, 0.5, 0.35); break;
-      case 'win':     [72, 76, 79, 84, 79, 84, 88].forEach((m, i) => tone(o, 'square', f(m), t + i * 0.11, 0.2, 0.3)); break;
-      case 'thunder': { // 번쩍-콰르릉
-        const crack = ctx.createBufferSource(), cg = ctx.createGain(), hp = ctx.createBiquadFilter();
-        crack.buffer = noiseBuf; hp.type = 'highpass'; hp.frequency.value = 1800;
-        cg.gain.setValueAtTime(0.9, t); cg.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-        crack.connect(hp); hp.connect(cg); cg.connect(o); crack.start(t); crack.stop(t + 0.3);
-        for (let i = 0; i < 3; i++) {
-          const r = ctx.createBufferSource(), rg = ctx.createGain(), lp = ctx.createBiquadFilter();
-          r.buffer = noiseBuf; r.loop = true; lp.type = 'lowpass'; lp.frequency.setValueAtTime(500, t + i * 0.12);
-          lp.frequency.exponentialRampToValueAtTime(70, t + 1.6);
-          rg.gain.setValueAtTime(0.0001, t + i * 0.12); rg.gain.exponentialRampToValueAtTime(0.9 - i * 0.2, t + i * 0.12 + 0.05);
-          rg.gain.exponentialRampToValueAtTime(0.0001, t + 1.7);
-          r.connect(lp); lp.connect(rg); rg.connect(o); r.start(t + i * 0.12); r.stop(t + 1.8);
-        }
-        tone(o, 'sine', 70, t, 1.2, 0.6, 30); break;
-      }
-      case 'pop':     tone(o, 'sine', 420, t, 0.09, 0.4, 950); break;
-      case 'step':    tone(o, 'sine', 600, t, 0.05, 0.08, 900); break;
-    }
-  }
-  function setBgm(on) { bgmOn = on; store.set('bgmOn', on ? '1' : '0'); if (on) unlock(); else stopBgm(); }
-  function setSfx(on) { sfxOn = on; store.set('sfxOn', on ? '1' : '0'); }
-  return { unlock, sfx, setBgm, setSfx, get bgmOn() { return bgmOn; }, get sfxOn() { return sfxOn; } };
-})();
-
-function refreshSoundBtns() {
-  $$('.bgmBtn').forEach(b => { b.classList.toggle('off', !Sound.bgmOn); b.title = '배경음악 ' + (Sound.bgmOn ? '끄기' : '켜기'); });
-  $$('.sfxBtn').forEach(b => { b.classList.toggle('off', !Sound.sfxOn); b.textContent = Sound.sfxOn ? '🔊' : '🔈'; });
-}
-$$('.bgmBtn').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); Sound.setBgm(!Sound.bgmOn); refreshSoundBtns(); toast(Sound.bgmOn ? '🎵 배경음악 ON' : '🎵 배경음악 OFF', 1000); }));
-$$('.sfxBtn').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); Sound.setSfx(!Sound.sfxOn); refreshSoundBtns(); Sound.sfx('pop'); toast(Sound.sfxOn ? '🔊 효과음 ON' : '🔈 효과음 OFF', 1000); }));
-refreshSoundBtns();
-// 브라우저 정책상 첫 터치/클릭 후에 소리가 나요
-['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => Sound.unlock(), { once: false, passive: true }));
-
-/* ---------------- 메뉴 거품 효과 ---------------- */
-(() => {
-  const box = $('#menuBubbles');
-  for (let i = 0; i < 14; i++) {
-    const b = document.createElement('div'); b.className = 'bub';
-    const s = 2 + Math.random() * 5;
-    Object.assign(b.style, { left: Math.random() * 100 + '%', width: s + 'cqw', height: s + 'cqw',
-      animationDuration: 7 + Math.random() * 9 + 's', animationDelay: -Math.random() * 14 + 's' });
-    box.appendChild(b);
-  }
-})();
-
-/* ---------------- 메뉴 버튼 ---------------- */
-function showScreen(id) { $$('.screen').forEach(s => s.classList.toggle('on', s.id === id)); }
-$('#btnOX').addEventListener('click', () => { Sound.sfx('start'); enterGame(); });
-$('#btnBattle').addEventListener('click', () => { Sound.sfx('pop'); toast('⚔️ 배틀 게임은 아직 미구현이에요! 조금만 기다려 주세요.', 2400); });
-$('#btnHow').addEventListener('click', () => { Sound.sfx('pop'); openOv('#howOv'); });
-$('#btnExit').addEventListener('click', () => { Sound.sfx('pop'); openOv('#exitOv'); });
-$('#exitYes').addEventListener('click', () => { closeOv('#exitOv'); Sound.setBgm(false); refreshSoundBtns(); try { window.close(); } catch {} openOv('#byeOv'); });
-
-/* =========================================================
-   🌐 서버 연결
-   ========================================================= */
-const ROOM = (new URLSearchParams(location.search).get('room') || 'main').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 20) || 'main';
-let token = store.get('ox_token', '');
-if (!token) { token = Math.random().toString(36).slice(2) + Date.now().toString(36); store.set('ox_token', token); }
-
-let ws = null, connected = false, retry = 0, S = null, myId = null, inGame = false;
-function connect() {
-  if (ws && (ws.readyState === 0 || ws.readyState === 1)) return;
-  const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
-  try { ws = new WebSocket(url); } catch { scheduleReconnect(); return; }
-  ws.onopen = () => { connected = true; retry = 0; send({ t: 'hello', token, room: ROOM }); };
-  ws.onmessage = e => { let m; try { m = JSON.parse(e.data); } catch { return; } onServer(m); };
-  ws.onclose = () => { connected = false; myId = null; scheduleReconnect(); };
-  ws.onerror = () => {};
-}
-function scheduleReconnect() { if (!inGame) return; setTimeout(connect, Math.min(5000, 600 * ++retry)); }
-function send(o) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); }
-setInterval(() => send({ t: 'ping' }), 20000);
-
-function onServer(m) {
-  if (m.t === 'state') onState(m);
-  else if (m.t === 'joined') { myId = m.id; myT = null; closeOv('#selectOv'); Sound.sfx('pop'); toast('입장 완료! 바닥을 눌러 움직여 보세요 🫧', 1800); }
-  else if (m.t === 'err') { Sound.sfx('wrong'); toast(m.msg, 2600); }
-}
-
-/* =========================================================
-   🎮 게임 화면
-   ========================================================= */
-function enterGame() {
-  inGame = true; showScreen('game'); connect();
-  if (!myId) openSelect();
-}
-$('#backBtn').addEventListener('click', () => {
-  Sound.sfx('pop'); send({ t: 'leave' }); myId = null; inGame = false;
-  closeOv('#selectOv'); closeOv('#resultOv'); showScreen('menu');
-});
-
-/* ---------- 캐릭터 선택 (4x4) ---------- */
-let pickCh = -1;
-(() => {
-  const g = $('#charGrid');
-  for (let i = 0; i < CHAR_COUNT; i++) {
-    const c = document.createElement('div'); c.className = 'card'; c.dataset.i = i;
-    c.innerHTML = `<span class="num">${i + 1}</span><img src="${charSrc(i)}" alt="캐릭터 ${i + 1}" draggable="false">`;
-    c.addEventListener('click', () => {
-      if (c.classList.contains('taken')) { toast('다른 친구가 고른 캐릭터예요!', 1300); return; }
-      pickCh = i; Sound.sfx('pop'); refreshSelect();
-    });
-    g.appendChild(c);
-  }
-  $('#nick').value = store.get('ox_nick', '');
-})();
-function takenSet() { return new Set((S ? S.players : []).filter(p => p.id !== myId).map(p => p.c)); }
-function refreshSelect() {
-  const taken = takenSet();
-  if (taken.has(pickCh)) pickCh = -1;
-  $$('#charGrid .card').forEach(c => { const i = +c.dataset.i; c.classList.toggle('taken', taken.has(i)); c.classList.toggle('sel', i === pickCh); });
-}
-function openSelect() {
-  if (S && S.players.length >= S.max) { toast(`정원(${S.max}명)이 꽉 찼어요. 관전하며 기다려 주세요!`); return; }
-  refreshSelect(); openOv('#selectOv');
-}
-$('#enterBtn').addEventListener('click', () => {
-  if (pickCh < 0) { toast('캐릭터를 먼저 골라 주세요!', 1400); return; }
-  if (!connected) { toast('서버에 연결 중이에요… 잠시 후 다시 눌러 주세요.'); connect(); return; }
-  const name = $('#nick').value.trim(); store.set('ox_nick', name);
-  send({ t: 'join', ch: pickCh, name });
-});
-$('#nick').addEventListener('keydown', e => { if (e.key === 'Enter') $('#enterBtn').click(); });
-$('#watchBtn').addEventListener('click', () => { Sound.sfx('pop'); closeOv('#selectOv'); });
-$('#joinBtn').addEventListener('click', () => { Sound.sfx('pop'); openSelect(); });
-$('#startBtn').addEventListener('click', () => { Sound.sfx('pop'); send({ t: 'start' }); });
-$('#againBtn').addEventListener('click', () => { Sound.sfx('pop'); send({ t: 'start' }); closeOv('#resultOv'); });
-
-/* ---------- 상태 수신 ---------- */
-let prev = null, endsAt = 0, lastTickSec = -1, outSet = new Set();
-function onState(m) {
-  const now = performance.now();
-  const old = S; S = m; endsAt = now + m.left;
-  const me = myId && m.players.find(p => p.id === myId);
-  if (myId && !me) myId = null;             // 서버에서 빠진 경우
-  if (me && !myT) myT = { x: me.x, y: me.y };
-  if (me && me.o) myT = { x: me.x, y: me.y };
-
-  const ph = m.ph, oph = old ? old.ph : null;
-  if (ph !== oph || (old && m.r !== old.r)) onPhase(old, m, me);
-  if ($('#selectOv').classList.contains('on')) refreshSelect();
-  syncEntities(m.players);
-  renderBoard();
-}
-
-function onPhase(old, m, me) {
-  const ph = m.ph;
-  if (ph === 'ready') { Sound.sfx('start'); closeOv('#resultOv'); banner('준비~!', false); }
-  if (ph === 'question') {
-    Sound.sfx('ding'); lastTickSec = -1;
-    const b = $('#board'); b.classList.remove('flash'); void b.offsetWidth; b.classList.add('flash');
-  }
-  if (ph === 'reveal' && old && old.ph === 'question') {
-    const wrong = new Set(m.wrong);
-    $(`#glow${m.a}`).classList.add('on');
-    let delay = 0;
-    for (const id of wrong) { const e = ents.get(id); if (e) { lightning(e, delay); delay += 140 + Math.random() * 120; } }
-    if (wrong.size) { Sound.sfx('thunder'); }
-    for (const p of m.players) if (!p.o) { const e = ents.get(p.id); if (e) { e.el.classList.add('cheer'); setTimeout(() => e.el.classList.remove('cheer'), 1400); } }
-    if (myId && wrong.has(myId)) { setTimeout(() => Sound.sfx('wrong'), 450); banner('⚡ 번개 맞았다! 탈락 😭', true); }
-    else if (me && !me.o) { Sound.sfx('correct'); banner(`정답 ${m.a}! 🎉`, false); }
-    else { if (!wrong.size) Sound.sfx('correct'); banner(`정답은 ${m.a}!`, false); }
-  }
-  if (ph !== 'reveal') { $('#glowO').classList.remove('on'); $('#glowX').classList.remove('on'); }
-  if (ph === 'end') showResult(m);
-  if (ph === 'lobby') closeOv('#resultOv');
-}
-
-/* ⚡ 하늘에서 번개가 떨어져 캐릭터를 맞히는 연출 */
-function lightning(e, delay) {
-  const ZAP = 650, BURN = 1300;          // 번쩍이는 시간 / 까맣게 탄 채로 있는 시간(ms)
-  e.fxUntil = performance.now() + delay + ZAP + BURN;
-  setTimeout(() => {
-    const game = $('#game'), H = 1659 / 948 * 100;      // viewBox 높이 (너비 100 기준)
-    const tx = e.x * 100, ty = e.y * H - 9;             // 캐릭터 몸통
-    const sx = tx + (Math.random() * 30 - 15);
-    const pts = [[sx, -2]], N = 10;
-    for (let i = 1; i < N; i++) {
-      const k = i / N;
-      pts.push([sx + (tx - sx) * k + (Math.random() * 9 - 4.5), -2 + (ty + 2) * k]);
-    }
-    pts.push([tx, ty]);
-    const bi = 3 + Math.floor(Math.random() * 4), [bx, by] = pts[bi];
-    const branch = [[bx, by], [bx + (Math.random() < .5 ? -1 : 1) * (6 + Math.random() * 6), by + 8], [bx + (Math.random() * 10 - 5), by + 15]];
-    const P = a => a.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ');
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('class', 'boltLayer'); svg.setAttribute('viewBox', `0 0 100 ${H}`); svg.setAttribute('preserveAspectRatio', 'none');
-    svg.innerHTML = `<polyline class="glow" points="${P(pts)}"/><polyline class="br" points="${P(branch)}"/><polyline class="core" points="${P(pts)}"/>`;
-    game.appendChild(svg); setTimeout(() => svg.remove(), 650);
-
-    const fl = $('#flash'); fl.classList.remove('on'); void fl.offsetWidth; fl.classList.add('on');
-    const st = $('#stage'); st.classList.remove('quake'); void st.offsetWidth; st.classList.add('quake');
-
-    const sc = document.createElement('div'); sc.className = 'scorch';
-    sc.style.left = e.x * 100 + '%'; sc.style.top = e.y * 100 + '%';
-    game.appendChild(sc); setTimeout(() => sc.remove(), 4100);
-    for (let i = 0; i < 10; i++) {
-      const sp = document.createElement('div'); sp.className = 'spark';
-      const a = Math.random() * Math.PI * 2, r = 6 + Math.random() * 10;
-      sp.style.left = e.x * 100 + '%'; sp.style.top = (e.y * 100 - 4) + '%';
-      sp.style.setProperty('--dx', Math.cos(a) * r + 'cqw'); sp.style.setProperty('--dy', Math.sin(a) * r - 3 + 'cqw');
-      game.appendChild(sp); setTimeout(() => sp.remove(), 700);
-    }
-    e.el.classList.remove('out', 'burnt'); e.el.classList.add('zap');
-    setTimeout(() => {
-      e.el.classList.remove('zap'); e.el.classList.add('burnt');
-      for (let i = 0; i < 5; i++) setTimeout(() => {
-        const sm = document.createElement('div'); sm.className = 'smoke';
-        sm.style.left = (e.x * 100 + (Math.random() * 4 - 2)) + '%'; sm.style.top = (e.y * 100 - 5) + '%';
-        sm.style.setProperty('--dx', (Math.random() * 8 - 4) + 'cqw');
-        game.appendChild(sm); setTimeout(() => sm.remove(), 1700);
-      }, i * 160);
-    }, ZAP);
-    setTimeout(() => { e.el.classList.remove('burnt'); e.el.classList.add('out'); }, ZAP + BURN);
-  }, delay);
-}
-
-function banner(text, bad) {
-  const b = $('#banner'); b.textContent = text; b.classList.toggle('bad', !!bad);
-  b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
-}
-
-function showResult(m) {
-  Sound.sfx('win');
-  $('#resultTitle').textContent = '🏆 ' + (m.title || '게임 종료!');
-  const w = $('#winners'); w.innerHTML = '';
-  for (const p of m.win) {
-    const d = document.createElement('div');
-    const img = document.createElement('img'); img.src = charSrc(p.c); img.alt = '';
-    const n = document.createElement('span'); n.textContent = p.n;
-    d.append(img, n); w.appendChild(d);
-  }
-  if (!m.win.length) w.innerHTML = '<div style="font-size:5cqw">🫧 아무도 남지 않았어요</div>';
-  $('#resultSub').textContent = `총 ${m.r}문제 진행 · 잠시 후 대기실로 돌아가요`;
-  const amHost = myId && m.host === myId;
-  $('#againBtn').style.display = amHost ? '' : 'none';
-  openOv('#resultOv');
-  confetti();
-}
-function confetti() {
-  const st = $('#stage'), colors = ['#ffe14d', '#ff7a6b', '#5fe0e6', '#7cffc5', '#c8a2ff', '#fff'];
-  for (let i = 0; i < 60; i++) {
-    const c = document.createElement('div'); c.className = 'confetti';
-    Object.assign(c.style, { left: Math.random() * 100 + '%', background: colors[i % colors.length],
-      animationDuration: 2 + Math.random() * 2.5 + 's', animationDelay: Math.random() * .8 + 's', borderRadius: i % 3 ? '2px' : '50%' });
-    st.appendChild(c); setTimeout(() => c.remove(), 6000);
-  }
-}
-
-/* ---------- 전광판 / HUD ---------- */
-function renderBoard() {
-  const b = $('#board');
-  if (!S) { b.innerHTML = '서버에 연결하는 중…'; return; }
-  const n = S.players.length;
-  const alive = S.players.filter(p => !p.o).length;
-  let html = '';
-  const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  if (S.ph === 'lobby') html = `참가자를 기다리는 중이에요!<span class="sub">바닥을 눌러 캐릭터를 움직여 보세요 (${n}/${S.max})</span>`;
-  else if (S.ph === 'ready') html = `곧 문제가 나와요!<span class="sub">O·X 구역 위치를 확인하세요</span>`;
-  else if (S.ph === 'question') html = esc(S.q || '');
-  else if (S.ph === 'reveal') html = `${esc(S.q || '')}<span class="ans ${S.a}">${S.a}</span>`;
-  else if (S.ph === 'end') html = `게임 종료!<span class="sub">${esc(S.title || '')}</span>`;
-  const len = (S.q || '').length;
-  b.style.fontSize = (S.ph === 'question' || S.ph === 'reveal') ? (len > 95 ? '3cqw' : len > 65 ? '3.5cqw' : len > 40 ? '4cqw' : '4.6cqw') : '4.3cqw';
-  if (b.dataset.h !== html) { b.innerHTML = `<div>${html}</div>`; b.dataset.h = html; }
-
-  $('#round').style.display = S.r && S.ph !== 'lobby' ? 'block' : 'none';
-  $('#round').textContent = `Q${S.r}`;
-  const me = myId && S.players.find(p => p.id === myId);
-  const amHost = !!(myId && S.host === myId);
-  const hostP = S.players.find(p => p.id === S.host);
-  $('.dot').classList.toggle('ok', connected);
-  $('#infoText').textContent = connected
-    ? `참가 ${n}/${S.max} · 생존 ${S.ph === 'lobby' ? n : alive} · 접속 ${S.watchers}${hostP ? ' · 👑' + hostP.n : ''}`
-    : '서버 연결이 끊겼어요. 다시 연결 중…';
-
-  const sb = $('#startBtn');
-  sb.style.display = amHost && S.ph === 'lobby' ? 'block' : 'none';
-  const note = $('#note');
-  let noteText = '';
-  if (S.ph === 'lobby' && !amHost) noteText = n ? '👑 방장이 시작하면 게임이 시작돼요!' : '첫 번째로 입장하면 방장이 돼요!';
-  note.textContent = noteText; note.style.display = noteText ? 'block' : 'none';
-  $('#joinBtn').style.display = !me && !$('#selectOv').classList.contains('on') ? 'block' : 'none';
-  $('#spectate').style.display = me && me.o ? 'block' : 'none';
-  const lock = !me || me.o || S.ph === 'reveal';
-  $('#pickO').disabled = lock; $('#pickX').disabled = lock;
-}
-
-function hudLoop() {
-  if (S && inGame) {
-    const left = Math.max(0, endsAt - performance.now());
-    const t = $('#timer'), bar = $('#tbar');
-    if (S.ph === 'question' || S.ph === 'ready') {
-      const sec = Math.ceil(left / 1000);
-      t.style.display = 'flex'; t.textContent = sec;
-      t.classList.toggle('hurry', S.ph === 'question' && sec <= 3);
-      if (S.ph === 'question') {
-        bar.style.display = 'block'; bar.firstElementChild.style.transform = `scaleX(${left / S.total})`;
-        if (sec <= 3 && sec > 0 && sec !== lastTickSec) { lastTickSec = sec; Sound.sfx('tick'); }
-      } else bar.style.display = 'none';
-    } else { t.style.display = 'none'; bar.style.display = 'none'; }
-    const me = myId && S.players.find(p => p.id === myId);
-    const side = myT && me && !me.o ? sideOf(myT.x) : null;
-    $('#pickO').classList.toggle('pick', S.ph === 'question' && side === 'O');
-    $('#pickX').classList.toggle('pick', S.ph === 'question' && side === 'X');
-  }
-  setTimeout(hudLoop, 100);
-}
-hudLoop();
-
-/* =========================================================
-   🐠 캐릭터 그리기 & 움직임
-   ========================================================= */
-const ents = new Map();
-let myT = null;              // 내 캐릭터 목표 위치 (내 화면에서는 바로 반응)
-function syncEntities(list) {
-  const seen = new Set();
-  for (const p of list) {
-    seen.add(p.id);
-    let e = ents.get(p.id);
-    if (!e) {
-      const el = document.createElement('div'); el.className = 'chr';
-      el.innerHTML = '<div class="wrap"><div class="shadow"></div><div class="sprite"><img alt="" draggable="false"></div><span class="arrow">▼</span><span class="crown"></span><span class="tag"></span></div>';
-      $('#field').appendChild(el);
-      e = { el, img: el.querySelector('img'), tag: el.querySelector('.tag'), crown: el.querySelector('.crown'), x: p.x, y: p.y, tx: p.x, ty: p.y, c: -1 };
-      ents.set(p.id, e);
-      el.animate([{ transform: 'scale(0)' }, { transform: 'scale(1.2)' }, { transform: 'scale(1)' }], { duration: 400 });
-    }
-    if (e.c !== p.c) { e.c = p.c; e.img.src = charSrc(p.c); }
-    if (e.tag.textContent !== p.n) e.tag.textContent = p.n;
-    e.tx = p.x; e.ty = p.y;
-    const isMe = p.id === myId;
-    e.el.classList.toggle('me', isMe);
-    if (!(e.fxUntil > performance.now())) e.el.classList.toggle('out', !!p.o);
-    e.el.classList.toggle('hosting', S && S.host === p.id);
-    e.crown.textContent = S && S.host === p.id ? '👑' : '';
-    e.isMe = isMe;
-  }
-  for (const [id, e] of ents) if (!seen.has(id)) { e.el.remove(); ents.delete(id); }
-}
-
-const keys = new Set();
-window.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT') return;
-  const k = e.key.toLowerCase();
-  if (['arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'a', 'd', 'w', 's'].includes(k)) { keys.add(k); e.preventDefault(); }
-  if (k === 'o' || k === '1') moveToSide('O');
-  if (k === 'x' || k === '2') moveToSide('X');
-});
-window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
-window.addEventListener('blur', () => keys.clear());
-
-function canMove() {
-  if (!S || !myId || !myT) return false;
-  const me = S.players.find(p => p.id === myId);
-  return me && !me.o && S.ph !== 'reveal';
-}
-function setTarget(x, y) {
-  if (!canMove()) return;
-  myT = { x: clamp(x, FIELD.x0, FIELD.x1), y: clamp(y, FIELD.y0, FIELD.y1) };
-  dirtyMove = true;
-}
-function moveToSide(side) {
-  if (!canMove()) return;
-  Sound.sfx('step');
-  const x = side === 'O' ? 0.14 + Math.random() * 0.26 : 0.60 + Math.random() * 0.26;
-  setTarget(x, FIELD.y0 + 0.03 + Math.random() * (FIELD.y1 - FIELD.y0 - 0.05));
-}
-$('#pickO').addEventListener('click', () => moveToSide('O'));
-$('#pickX').addEventListener('click', () => moveToSide('X'));
-
-function stagePoint(ev) {
-  const r = $('#stage').getBoundingClientRect();
-  return { x: (ev.clientX - r.left) / r.width, y: (ev.clientY - r.top) / r.height };
-}
-let dragging = false;
-const arena = $('#arena');
-arena.addEventListener('pointerdown', ev => {
-  if (!myId) { if (S && S.players.length < S.max) openSelect(); return; }
-  if (!canMove()) return;
-  dragging = true; arena.setPointerCapture(ev.pointerId);
-  const p = stagePoint(ev); setTarget(p.x, p.y + 0.02);
-});
-arena.addEventListener('pointermove', ev => { if (dragging) { const p = stagePoint(ev); setTarget(p.x, p.y + 0.02); } });
-['pointerup', 'pointercancel'].forEach(t => arena.addEventListener(t, () => { dragging = false; }));
-
-let dirtyMove = false, lastSent = 0, lastFrame = performance.now();
-const SPEED = 0.42;   // 화면 너비 비율/초
-function frame(now) {
-  const dt = Math.min(0.05, (now - lastFrame) / 1000); lastFrame = now;
-  // 키보드 이동
-  if (keys.size && canMove()) {
-    let dx = 0, dy = 0;
-    if (keys.has('arrowleft') || keys.has('a')) dx -= 1;
-    if (keys.has('arrowright') || keys.has('d')) dx += 1;
-    if (keys.has('arrowup') || keys.has('w')) dy -= 1;
-    if (keys.has('arrowdown') || keys.has('s')) dy += 1;
-    if (dx || dy) {
-      const me = ents.get(myId);
-      const bx = me ? me.x : myT.x, by = me ? me.y : myT.y;
-      setTarget(bx + dx * SPEED * dt * 2.2, by + dy * SPEED * dt * 1.6);
-    }
-  }
-  if (dirtyMove && now - lastSent > 60) { dirtyMove = false; lastSent = now; send({ t: 'move', x: +myT.x.toFixed(4), y: +myT.y.toFixed(4) }); }
-
-  const phQ = S && S.ph === 'question';
-  for (const [id, e] of ents) {
-    const tgt = e.isMe && myT && canMove() ? myT : { x: e.tx, y: e.ty };
-    const dx = tgt.x - e.x, dy = (tgt.y - e.y) * 0.6;
-    const d = Math.hypot(dx, dy);
-    const stepLen = SPEED * dt * (d > 0.25 ? 2 : 1);
-    if (d > 0.0015) {
-      const k = Math.min(1, stepLen / d);
-      e.x += (tgt.x - e.x) * k; e.y += (tgt.y - e.y) * k;
-      if (Math.abs(dx) > 0.002) e.el.classList.toggle('flip', dx < 0);
-      e.el.classList.add('walk');
-    } else { e.x = tgt.x; e.y = tgt.y; e.el.classList.remove('walk'); }
-    e.el.style.left = (e.x * 100) + '%';
-    e.el.style.top = (e.y * 100) + '%';
-    e.el.style.zIndex = e.el.classList.contains('out') ? 1 : 10 + Math.round(e.y * 1000);
-    e.el.classList.toggle('undecided', phQ && !e.el.classList.contains('out') && sideOf(e.x) === null);
-  }
-  requestAnimationFrame(frame);
-}
-requestAnimationFrame(frame);
-</script>
+<script src="app.js"></script>
 </body>
 </html>
