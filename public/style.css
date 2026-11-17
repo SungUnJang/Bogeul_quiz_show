@@ -258,6 +258,7 @@
   .chatBar{position:absolute;left:22%;right:4%;bottom:1.6%;display:flex;gap:1.6cqw;z-index:20}
   .chatBar input{flex:1;min-width:0;font-family:inherit;font-size:3.8cqw;padding:1.4cqw 3cqw;border-radius:4cqw;border:.5cqw solid #9eeeff;outline:none;color:#063a55}
   .chatBar button{font-size:3.8cqw;padding:0 3.4cqw;border-radius:4cqw;border:.5cqw solid #fff3c4;color:#fff;cursor:pointer;background:linear-gradient(#5fe0e6,#159bb5)}
+  .skipBtn{position:absolute;right:4%;bottom:15%;z-index:20;font-size:3.2cqw;padding:1cqw 3cqw;display:none}
   .clearBtn{position:absolute;right:4%;bottom:9%;z-index:20;font-size:3.2cqw;padding:1cqw 3cqw;display:none}
   .chr .bubbleRing{display:none;position:absolute;left:50%;bottom:-3cqw;width:20cqw;height:20cqw;transform:translateX(-50%);border-radius:50%;
     border:.4cqw solid rgba(255,255,255,.85);pointer-events:none;

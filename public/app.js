@@ -600,6 +600,7 @@ function drawHud(me, amHost) {
   $('#rideBtn').disabled = !drawing;
   $('#rideBtn').classList.toggle('riding', drawing && riding);
   $('#clearBtn').style.display = drawing ? 'block' : 'none';
+  $('#skipBtn').style.display = amHost && S.ph === 'draw' ? 'block' : 'none';   // 👑 방장만 보여요
   $('#darena').classList.toggle('can', drawing);
   $('#chatIn').placeholder = drawing ? '출제자는 채팅만 가능해요' : (me ? '정답을 입력하세요!' : '참가하면 정답을 입력할 수 있어요');
   $('#chatIn').disabled = !me;
@@ -672,6 +673,12 @@ function toggleRide() {
   if (!riding && dPos) dot([dPos.x, dPos.y]);
 }
 $('#rideBtn').addEventListener('click', toggleRide);
+let skipArm = 0;
+$('#skipBtn').addEventListener('click', () => {
+  const now = Date.now();
+  if (now - skipArm > 2500) { skipArm = now; Sound.sfx('pop'); toast('한 번 더 누르면 이번 차례를 넘겨요 ⏭', 2400); return; }
+  skipArm = 0; send({ t: 'skip' });
+});
 $('#clearBtn').addEventListener('click', () => { if (amDrawer()) { Sound.sfx('pop'); send({ t: 'clear' }); } });
 const darena = $('#darena');
 let dDragging = false;

@@ -470,6 +470,14 @@ class Client {
         room.points = []; room.sv++; room.ptsSent = 0; room.sendPoints(true); room.touch(true);
         break;
       }
+      case 'skip': {                     // 👑 방장: 지금 차례 넘기기
+        if (!me || !room || room.mode !== 'draw' || me.id !== room.hostId) return this.err('방장만 차례를 넘길 수 있어요.');
+        if (room.phase !== 'draw') return;
+        const d = room.byId(room.drawerId);
+        room.sysChat(`👑 방장이 ${d ? d.name + ' 님의 ' : ''}차례를 넘겼어요.`);
+        room.revealDraw(null, '방장이 차례를 넘겼어요');
+        break;
+      }
       case 'getpts': if (room && room.mode === 'draw') room.sendPoints(true, this); break;
       case 'chat': {
         if (!me || room.mode !== 'draw') return;
